@@ -23,12 +23,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val etCodigo = findViewById<EditText>(R.id.etCodigoBuscar)
+        val btnIniciar = findViewById<Button>(R.id.btnIniciarSesion)
         val btnBuscar = findViewById<Button>(R.id.btnBuscar)
         btnBuscar.setOnClickListener { consultar() }
+        btnIniciar.setOnClickListener { registrar() }
     }
     
     fun prueba(){
-        Toast.makeText(this, "Nada que hacer Papu", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Buena esa Papa", Toast.LENGTH_SHORT).show()
         
     }
 
@@ -44,6 +46,33 @@ class MainActivity : AppCompatActivity() {
             tvCategoria.setText(product.categoria)
 
         }
+    }
+
+    fun registrar(){
+        val retrofit: Retrofit = Retrofit.Builder()
+                .baseUrl("https://distribuidoraesb.azurewebsites.net/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+        val service = retrofit.create<ApiServices>(ApiServices::class.java)
+
+        var usuario = Usuario(correo = "admin@admin.com", contraseña = "123", idPersona = null, rol = null, token = null)
+        service.inicioSesion(usuario).enqueue(object : Callback<Usuario> {
+            override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
+                val user = response.body()
+                Log.i("TAG_LOGS", Gson().toJson(user))
+                var idPersona = findViewById<EditText>(R.id.etUsuario)
+                var rol = findViewById<EditText>(R.id.etContraseña)
+
+                idPersona.setText(user?.idPersona)
+                rol.setText(user?.rol)
+            }
+
+            override fun onFailure(call: Call<Usuario>, t: Throwable) {
+                t?.printStackTrace()
+            }
+
+        })
     }
 
     fun consultar(){
